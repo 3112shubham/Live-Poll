@@ -1,12 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { db, doc, getDoc, onSnapshot, collection } from '../firebase';
-import { Link } from 'react-router-dom';
-import bgImage from './assets/Background.png'; // <- adjust filename if different
-import logoLeft from './assets/IU logo New.png'; // added: left logo
-import logoRight from './assets/Vyom logo.png'; // added: right logo
-import logoRightbottom from './assets/GA logo new.png'; // added: right logo
+import React, { useEffect, useState } from "react";
+import { db, doc, getDoc, onSnapshot, collection } from "../firebase";
+import { Link } from "react-router-dom";
+import bgImage from "./assets/Background.png"; // <- adjust filename if different
+import logoLeft from "./assets/IU logo New.png"; // added: left logo
+import logoRight from "./assets/Vyom logo.png"; // added: right logo
+import logoRightbottom from "./assets/GA logo new.png"; // added: right logo
 
-const RATING_LABELS = ['Not useful', 'Slightly useful', 'Useful', 'Very useful', 'Most useful']; // 5-level labels
+const RATING_LABELS = [
+  "Not useful",
+  "Slightly useful",
+  "Useful",
+  "Very useful",
+  "Most useful",
+]; // 5-level labels
 
 export default function Result() {
   const [question, setQuestion] = useState(null);
@@ -15,15 +21,15 @@ export default function Result() {
 
   // map percentage -> descriptive label (left of percentage)
   const pctLabelFor = (pct) => {
-    if (pct <= 20) return RATING_LABELS[0];    // Not useful
-    if (pct <= 40) return RATING_LABELS[1];    // Slightly
-    if (pct <= 60) return RATING_LABELS[2];    // Useful
-    if (pct <= 80) return RATING_LABELS[3];    // Very
-    return RATING_LABELS[4];                   // Most useful
+    if (pct <= 20) return RATING_LABELS[0]; // Not useful
+    if (pct <= 40) return RATING_LABELS[1]; // Slightly
+    if (pct <= 60) return RATING_LABELS[2]; // Useful
+    if (pct <= 80) return RATING_LABELS[3]; // Very
+    return RATING_LABELS[4]; // Most useful
   };
 
   useEffect(() => {
-    const activeRef = doc(db, 'active', 'question');
+    const activeRef = doc(db, "active", "question");
     const unsubActive = onSnapshot(activeRef, async (snap) => {
       const data = snap.exists() ? snap.data() : null;
       const id = data?.questionId || null;
@@ -33,18 +39,22 @@ export default function Result() {
         setTotalResponses(0);
         return;
       }
-      const qSnap = await getDoc(doc(db, 'questions', id));
+      const qSnap = await getDoc(doc(db, "questions", id));
       if (qSnap.exists()) {
         const q = { id: qSnap.id, ...qSnap.data() };
         setQuestion(q);
-        setOptionRatingCounts(new Array(q.options?.length || 0).fill(0).map(() => new Array(5).fill(0)));
+        setOptionRatingCounts(
+          new Array(q.options?.length || 0)
+            .fill(0)
+            .map(() => new Array(5).fill(0))
+        );
       } else {
         setQuestion(null);
         setOptionRatingCounts([]);
       }
     });
 
-    const unsubResponses = onSnapshot(collection(db, 'responses'), (snap) => {
+    const unsubResponses = onSnapshot(collection(db, "responses"), (snap) => {
       (async () => {
         const aSnap = await getDoc(activeRef);
         const activeId = aSnap.exists() ? aSnap.data().questionId : null;
@@ -53,16 +63,18 @@ export default function Result() {
           setTotalResponses(0);
           return;
         }
-        const qSnap = await getDoc(doc(db, 'questions', activeId));
-        const optsLen = qSnap.exists() ? (qSnap.data().options?.length || 0) : 0;
-        const counts = new Array(optsLen).fill(0).map(() => new Array(5).fill(0));
+        const qSnap = await getDoc(doc(db, "questions", activeId));
+        const optsLen = qSnap.exists() ? qSnap.data().options?.length || 0 : 0;
+        const counts = new Array(optsLen)
+          .fill(0)
+          .map(() => new Array(5).fill(0));
         let tot = 0;
         snap.docs.forEach((d) => {
           const data = d.data();
           if (data.questionId === activeId && Array.isArray(data.ratings)) {
             tot += 1;
             data.ratings.forEach((rVal, i) => {
-              const rIdx = typeof rVal === 'number' ? rVal - 1 : -1;
+              const rIdx = typeof rVal === "number" ? rVal - 1 : -1;
               if (rIdx >= 0 && rIdx < 5 && i < optsLen) counts[i][rIdx] += 1;
             });
           }
@@ -83,15 +95,18 @@ export default function Result() {
       className="min-h-screen relative flex items-center justify-center p-1" // changed items-start -> items-center
       style={{
         backgroundImage: `url(${bgImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
-        backgroundColor: '#f8fafc',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        backgroundColor: "#f8fafc",
       }}
     >
       {/* single semi-transparent black overlay over the background image */}
-      <div aria-hidden className="absolute inset-0 bg-black/40 pointer-events-none" />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-black/40 pointer-events-none"
+      />
 
       {/* logos positioned relative to viewport (won't affect container centering) */}
       <img
@@ -111,20 +126,28 @@ export default function Result() {
       />
 
       <div
-        className="w-full max-w-4xl relative overflow-hidden p-4
-                   bg-gradient-to-r from-black/60 via-black/50 to-black/40
-                   backdrop-blur-xl backdrop-saturate-150
+        className="w-full max-w-2xl relative overflow-hidden p-4
+                   bg-gradient-to-r from-black/30 via-black/20 to-black/10
+                   backdrop-blur-2xl backdrop-saturate-150
                    shadow-lg ring-1 ring-white/5 ring-inset text-white"
         style={{
-          border: '1px solid transparent',
+          border: "1px solid rgba(255,255,255,0.04)",
           borderImage:
-            'linear-gradient(90deg, rgba(99,102,241,0.75), rgba(59,130,246,0.5), rgba(6,182,212,0.45)) 1',
-          boxShadow: '0 10px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02)',
+            "linear-gradient(90deg, rgba(99,102,241,0.45), rgba(59,130,246,0.25), rgba(6,182,212,0.2)) 1",
+          boxShadow:
+            "0 6px 18px rgba(2,6,23,0.35), inset 0 1px 0 rgba(255,255,255,0.01)",
+          backgroundColor: "transparent",
         }}
       >
         {/* subtle dark frosted overlay for deeper "black glass" look */}
-        <div aria-hidden className="absolute inset-0 pointer-events-none"
-             style={{background: 'linear-gradient(180deg, rgba(0,0,0,0.45), rgba(255,255,255,0.02))'}} />
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0.20), rgba(255,255,255,0.01))",
+          }}
+        />
 
         <div className="flex justify-between items-center mb-4">
           <div>
@@ -132,8 +155,9 @@ export default function Result() {
             <div className="text-sm text-white">{question?.domain}</div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="text-sm">{totalResponses} response{totalResponses !== 1 ? 's' : ''}</div>
-
+            <div className="text-sm">
+              {totalResponses} response{totalResponses !== 1 ? "s" : ""}
+            </div>
           </div>
         </div>
 
@@ -142,14 +166,21 @@ export default function Result() {
         ) : (
           <>
             <div className="mb-1">
-              <p className="text-xl font-medium !text-white drop-shadow">{question.text}</p> {/* changed: force white and add drop-shadow */}
+              <p className="text-xl font-medium !text-white drop-shadow">
+                {question.text}
+              </p>{" "}
+              {/* changed: force white and add drop-shadow */}
             </div>
 
             <div className="space-y-1">
               {question.options.map((opt, i) => {
                 const counts = optionRatingCounts[i] || new Array(5).fill(0);
-                const total = totalResponses || counts.reduce((a, b) => a + b, 0) || 0;
-                const sum = counts.reduce((acc, c, idx) => acc + c * (idx + 1), 0);
+                const total =
+                  totalResponses || counts.reduce((a, b) => a + b, 0) || 0;
+                const sum = counts.reduce(
+                  (acc, c, idx) => acc + c * (idx + 1),
+                  0
+                );
                 const avg = total ? sum / total : 0; // average rating in range 0..5
                 const avgPct = Math.round((avg / 5) * 100);
 
@@ -157,29 +188,46 @@ export default function Result() {
                 return (
                   <div
                     key={i}
-                    className="p-3 bg-black/40 backdrop-blur-sm rounded-lg shadow-sm"
+                    className="p-3 bg-white/3 backdrop-blur-lg backdrop-saturate-150 rounded-lg shadow-sm relative overflow-hidden"
                     style={{
-                      border: '1px solid transparent',
-                      borderImage:
-                        'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(99,102,241,0.08)) 1',
-                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02), 0 6px 18px rgba(2,6,23,0.45)',
+                      border: "1px solid rgba(255,255,255,0.04)",
+                      boxShadow:
+                        "inset 0 1px 0 rgba(255,255,255,0.01), 0 6px 18px rgba(2,6,23,0.35)",
+                      background:
+                        "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005))",
                     }}
                   >
                     <div className="flex items-center justify-between gap-4 mb-3">
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-white truncate">{opt}</div>
-                        <div className="text-xs mt-1">
-                           {total ? `${avg.toFixed(2)} / 5` : 'No responses yet'}
-                         </div>
+                        <div className="text-sm font-semibold text-white truncate">
+                          {opt}
+                        </div>
+                        <div className="text-xs mt-1 text-white/80">
+                          {total ? `${avg.toFixed(2)} / 5` : "No responses yet"}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        {/* descriptive label on the left of the percentage */}
-                        <div className="text-sm whitespace-nowrap">{pctLabelFor(avgPct)}</div>
+                      {/* glassy counter pill */}
+                      <div
+                        className="flex items-center gap-3 px-3 py-1 rounded-full"
+                        style={{
+                          background:
+                            "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))",
+                          backdropFilter: "blur(12px) saturate(140%)",
+                          WebkitBackdropFilter: "blur(12px) saturate(140%)",
+                          border: "1px solid rgba(255,255,255,0.06)",
+                          boxShadow:
+                            "0 6px 18px rgba(2,6,23,0.35), inset 0 1px 0 rgba(255,255,255,0.01)",
+                        }}
+                        aria-hidden
+                      >
+                        <div className="text-sm whitespace-nowrap text-white/90">
+                          {pctLabelFor(avgPct)}
+                        </div>
 
-                        <div className="text-sm font-semibold tabular-nums">{avgPct}%</div>
-
-                      
+                        <div className="text-sm font-semibold tabular-nums text-white">
+                          {avgPct}%
+                        </div>
                       </div>
                     </div>
 
@@ -189,14 +237,16 @@ export default function Result() {
                       aria-valuemin={0}
                       aria-valuemax={100}
                       aria-valuenow={avgPct}
-                      aria-label={`${opt} average rating ${avg.toFixed(2)} out of 5`}
-                      className="w-full h-3 bg-white/10 rounded-full overflow-hidden"
+                      aria-label={`${opt} average rating ${avg.toFixed(
+                        2
+                      )} out of 5`}
+                      className="w-full h-3 bg-white/8 rounded-full overflow-hidden"
                     >
                       <div
                         className="h-full rounded-full transition-all duration-300"
                         style={{
                           width: `${avgPct}%`,
-                          background: 'linear-gradient(90deg,#06b6d4,#3b82f6)',
+                          background: "linear-gradient(90deg,#06b6d4,#3b82f6)",
                         }}
                       />
                     </div>

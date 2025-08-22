@@ -152,7 +152,7 @@ export default function LivePoll() {
             </header>
 
             <section className="mb-4">
-              <p className="text-base font-medium">{question.text}</p>
+              <p className="text-2xl sm:text-3xl font-semibold !text-white">{question.text}</p> {/* changed: larger font + force white */}
             </section>
 
             <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
