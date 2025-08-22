@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { db, doc, getDoc, onSnapshot, setDoc } from '../firebase';
 
-// ...existing code...
 const RATING_LABELS = ['Not useful', 'Slightly useful', 'Useful', 'Very useful', 'Most useful']; // 5-level labels
-// ...existing code...
 
 function getOrCreateClientId() {
   try {
@@ -114,13 +112,7 @@ export default function LivePoll() {
                 <div className="text-xs text-gray-500">{question.domain}</div>
                 <h1 className="text-2xl font-semibold text-gray-900 leading-tight">Live Poll</h1>
               </div>
-              <div className="hidden sm:flex items-center text-sm text-gray-500 space-x-3">
-                <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path d="M3 12h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M3 6h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <div>Tap a label to choose — keyboard accessible</div>
-              </div>
+
             </header>
 
             <section className="mb-6">
@@ -152,8 +144,7 @@ export default function LivePoll() {
                 return (
                   <div
                     key={idx}
-                    className="p-4 border rounded-lg shadow-sm bg-white"
-                    style={{ minHeight: 120 }}
+                    className="p-4 border rounded-lg shadow-sm bg-white sm:min-h-[120px] min-h-0"
                     aria-labelledby={`opt-${idx}-label`}
                   >
                     <div className="mb-3">
@@ -162,81 +153,45 @@ export default function LivePoll() {
                       </div>
                     </div>
 
-                    {/* container for progress + overlay labels */}
-                    <div className="relative" style={{ height: 64 }}>
-                      {/* full-width clickable bar (visual) */}
-                      <div
-                        className="absolute inset-x-0 top-1/2 transform -translate-y-1/2 h-3 rounded-full bg-gradient-to-r from-gray-200 to-gray-200 overflow-hidden"
-                        role="presentation"
-                        onClick={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          const x = e.clientX - rect.left;
-                          const ratio = Math.max(0, Math.min(1, x / rect.width));
-                          const newVal = Math.ceil(ratio * 5) || 1;
-                          setRatingForOption(idx, newVal);
-                        }}
-                        onTouchStart={(e) => {
-                          // support touch: take first touch
-                          const touch = e.touches?.[0];
-                          if (!touch) return;
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          const x = touch.clientX - rect.left;
-                          const ratio = Math.max(0, Math.min(1, x / rect.width));
-                          const newVal = Math.ceil(ratio * 5) || 1;
-                          setRatingForOption(idx, newVal);
-                        }}
-                        aria-hidden="true"
-                      >
-                        <div
-                          className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 transition-all"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-
-                      {/* overlay labels (centered vertically on bar). pointer-events enabled on buttons only */}
-                      <div
-                        className="absolute inset-x-0 top-1/2 transform -translate-y-1/2"
-                        style={{ pointerEvents: 'none' }}
-                      >
-                        <div className="relative" style={{ height: 0 }}>
+                    <div className="relative">
+                      {/* Radio buttons (visible on all sizes) */}
+                      <fieldset className="mb-3" onKeyDown={onKey} aria-labelledby={`opt-${idx}-label`}>
+                        <legend className="sr-only">{`Rate ${opt}`}</legend>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                           {RATING_LABELS.map((label, rIdx) => {
                             const markerVal = rIdx + 1;
-                            const leftPercent = (rIdx / (5 - 1)) * 100;
                             const selected = val === markerVal;
+                            const inputId = `opt-${idx}-r-${markerVal}`;
                             return (
-                              <button
-                                key={rIdx}
-                                onClick={() => setRatingForOption(idx, markerVal)}
-                                onKeyDown={onKey}
-                                aria-pressed={selected}
-                                aria-label={`${opt} — ${label}`}
-                                type="button"
-                                style={{
-                                  position: 'absolute',
-                                  left: `${leftPercent}%`,
-                                  transform: 'translate(-50%, -50%)',
-                                  top: '50%',
-                                  pointerEvents: 'auto', // allow clicks/taps only on label buttons
-                                  minWidth: 92,
-                                }}
-                                className={`flex items-center justify-center px-3 py-1 rounded-md text-sm font-medium border transition-shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 ${
+                              <label
+                                key={markerVal}
+                                htmlFor={inputId}
+                                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium border transition cursor-pointer ${
                                   selected
-                                    ? 'bg-blue-600 text-white border-blue-700 shadow'
+                                    ? 'bg-blue-600 text-white border-blue-700 shadow-sm'
                                     : 'bg-white text-gray-700 border-gray-200 hover:shadow-sm'
                                 }`}
                               >
-                                <span className="truncate" style={{ maxWidth: 200 }}>
-                                  {label}
-                                </span>
-                              </button>
+                                <input
+                                  id={inputId}
+                                  name={`opt-${idx}`}
+                                  type="radio"
+                                  value={markerVal}
+                                  checked={selected}
+                                  onChange={() => setRatingForOption(idx, markerVal)}
+                                  className="w-4 h-4 accent-blue-600"
+                                />
+                                <span className="truncate">{label}</span>
+                              </label>
                             );
                           })}
                         </div>
-                      </div>
+                      </fieldset>
 
-                      {/* visually hidden instructions for screen readers */}
-                      <div className="sr-only" id={`opt-${idx}-instructions`}>
-                        Use left and right arrow keys to change rating. Home to choose first, End to choose last.
+                      {/* helper / instructions */}
+                      <div className="mt-3 text-xs text-gray-500 flex justify-between items-center">
+                        <div>{val ? RATING_LABELS[val - 1] : 'Choose a rating'}</div>
+                        <div className="tabular-nums">{val ? `${pct}%` : '—'}</div>
                       </div>
                     </div>
                   </div>
