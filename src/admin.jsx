@@ -12,8 +12,25 @@ import {
 } from '../firebase';
 import { deleteDoc } from 'firebase/firestore';
 
+const PRESET_DOMAINS = ['Finance', 'Marketing', 'HR', 'Operations', 'Management'];
+
+function normalizeDomain(input = '') {
+  const s = (input || '').trim();
+  if (!s) return '';
+  // Keep short acronyms uppercase (e.g., HR, IT)
+  if (s.length <= 3) return s.toUpperCase();
+  // Title case for normal words
+  return s
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
 export default function Admin() {
-  const [domain, setDomain] = useState('');
+  // create form state
+  const [domainSelect, setDomainSelect] = useState(''); // '' = placeholder, or value from PRESET_DOMAINS or 'Other'
+  const [domainOther, setDomainOther] = useState('');
   const [questionText, setQuestionText] = useState('');
   const [options, setOptions] = useState(['', '', '', '']);
   const [questions, setQuestions] = useState([]);
@@ -21,7 +38,8 @@ export default function Admin() {
 
   // editing state
   const [editingId, setEditingId] = useState(null);
-  const [editDomain, setEditDomain] = useState('');
+  const [editDomainSelect, setEditDomainSelect] = useState('');
+  const [editDomainOther, setEditDomainOther] = useState('');
   const [editQuestionText, setEditQuestionText] = useState('');
   const [editOptions, setEditOptions] = useState([]);
 
@@ -52,12 +70,15 @@ export default function Admin() {
   };
 
   const handleCreateAndActivate = async () => {
-    if (!domain.trim()) return alert('Domain is required.');
+    const rawDomain = domainSelect === 'Other' ? domainOther : domainSelect;
+    const finalDomain = normalizeDomain(rawDomain);
+    if (!finalDomain) return alert('Domain is required.');
     if (!questionText.trim()) return alert('Question text required.');
     const cleanedOptions = options.map((o) => o.trim()).filter((o) => o !== '');
     if (cleanedOptions.length < 2) return alert('Provide at least 2 options.');
+
     const payload = {
-      domain: domain.trim(),
+      domain: finalDomain,
       text: questionText.trim(),
       options: cleanedOptions,
       createdAt: new Date(),
@@ -65,7 +86,10 @@ export default function Admin() {
     const colRef = collection(db, 'questions');
     const docRef = await addDoc(colRef, payload);
     await setDoc(doc(db, 'active', 'question'), { questionId: docRef.id });
-    setDomain('');
+
+    // reset form
+    setDomainSelect('');
+    setDomainOther('');
     setQuestionText('');
     setOptions(['', '', '', '']);
     await fetchQuestions();
@@ -92,7 +116,15 @@ export default function Admin() {
   // start editing
   const handleEditClick = (q) => {
     setEditingId(q.id);
-    setEditDomain(q.domain || '');
+    // determine if domain matches preset (case-insensitive)
+    const presetMatch = PRESET_DOMAINS.find((d) => d.toLowerCase() === (q.domain || '').toLowerCase());
+    if (presetMatch) {
+      setEditDomainSelect(presetMatch);
+      setEditDomainOther('');
+    } else {
+      setEditDomainSelect('Other');
+      setEditDomainOther(q.domain || '');
+    }
     setEditQuestionText(q.text || '');
     setEditOptions(Array.isArray(q.options) ? [...q.options] : ['', '']);
   };
@@ -110,12 +142,14 @@ export default function Admin() {
   const handleRemoveOption = (i) => setOptions((s) => s.filter((_, idx) => idx !== i));
 
   const handleSaveEdit = async () => {
-    if (!editDomain.trim()) return alert('Domain required.');
+    const rawDomain = editDomainSelect === 'Other' ? editDomainOther : editDomainSelect;
+    const finalDomain = normalizeDomain(rawDomain);
+    if (!finalDomain) return alert('Domain required.');
     if (!editQuestionText.trim()) return alert('Question text required.');
     const cleaned = editOptions.map((o) => o.trim()).filter((o) => o !== '');
     if (cleaned.length < 2) return alert('At least 2 options required.');
     const payload = {
-      domain: editDomain.trim(),
+      domain: finalDomain,
       text: editQuestionText.trim(),
       options: cleaned,
       updatedAt: new Date(),
@@ -137,12 +171,33 @@ export default function Admin() {
         <section className="mb-6">
           <h2 className="font-medium mb-2">Create & activate question</h2>
 
-          <input
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
-            placeholder="Domain (e.g., Finance, Hiring)"
-            className="w-full p-2 border rounded mb-2"
-          />
+          <label className="block text-sm text-gray-600 mb-1">Domain</label>
+          <div className="flex gap-2 mb-2">
+            <select
+              aria-label="Domain"
+              value={domainSelect}
+              onChange={(e) => setDomainSelect(e.target.value)}
+              className="p-2 border rounded flex-1"
+            >
+              <option value="">Select domain...</option>
+              {PRESET_DOMAINS.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+              <option value="Other">Other</option>
+            </select>
+
+            {domainSelect === 'Other' && (
+              <input
+                aria-label="Custom domain"
+                value={domainOther}
+                onChange={(e) => setDomainOther(e.target.value)}
+                placeholder="Custom domain (e.g., Sales)"
+                className="p-2 border rounded flex-1"
+              />
+            )}
+          </div>
 
           <input
             value={questionText}
@@ -171,7 +226,7 @@ export default function Admin() {
             <button onClick={handleAddOption} className="px-3 py-1 bg-gray-100 rounded text-sm">
               + Add option
             </button>
-            <button onClick={() => setOptions(['', '', '', ''])} className="px-3 py-1 bg-gray-100 rounded text-sm">
+            <button onClick={() => { setOptions(['', '', '', '']); setDomainSelect(''); setDomainOther(''); setQuestionText(''); }} className="px-3 py-1 bg-gray-100 rounded text-sm">
               Reset
             </button>
           </div>
@@ -195,12 +250,32 @@ export default function Admin() {
                 <div className="flex-1">
                   {editingId === q.id ? (
                     <div>
-                      <input
-                        value={editDomain}
-                        onChange={(e) => setEditDomain(e.target.value)}
-                        className="w-full p-2 border rounded mb-2"
-                        placeholder="Domain"
-                      />
+                      <label className="block text-sm text-gray-600 mb-1">Domain</label>
+                      <div className="flex gap-2 mb-2">
+                        <select
+                          value={editDomainSelect}
+                          onChange={(e) => setEditDomainSelect(e.target.value)}
+                          className="p-2 border rounded flex-1"
+                        >
+                          <option value="">Select domain...</option>
+                          {PRESET_DOMAINS.map((d) => (
+                            <option key={d} value={d}>
+                              {d}
+                            </option>
+                          ))}
+                          <option value="Other">Other</option>
+                        </select>
+
+                        {editDomainSelect === 'Other' && (
+                          <input
+                            value={editDomainOther}
+                            onChange={(e) => setEditDomainOther(e.target.value)}
+                            placeholder="Custom domain"
+                            className="p-2 border rounded flex-1"
+                          />
+                        )}
+                      </div>
+
                       <input
                         value={editQuestionText}
                         onChange={(e) => setEditQuestionText(e.target.value)}
