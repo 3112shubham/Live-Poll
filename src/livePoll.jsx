@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { db, doc, getDoc, onSnapshot, setDoc } from '../firebase';
 
-const RATING_LABELS = ['Not useful', 'Slightly', 'Useful', 'Very', 'Most useful']; // 5-level labels
+// ...existing code...
+const RATING_LABELS = ['Not useful', 'Slightly useful', 'Useful', 'Very useful', 'Most useful']; // 5-level labels
+// ...existing code...
 
 function getOrCreateClientId() {
   try {

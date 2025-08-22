@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { db, doc, getDoc, onSnapshot, collection } from '../firebase';
 import { Link } from 'react-router-dom';
 
-const RATING_LABELS = ['Not useful', 'Slightly', 'Useful', 'Very', 'Most useful']; // same 5-level labels
+// ...existing code...
+const RATING_LABELS = ['Not useful', 'Slightly useful', 'Useful', 'Very useful', 'Most useful']; // 5-level labels
+// ...existing code...
 
 export default function Result() {
   const [question, setQuestion] = useState(null);
