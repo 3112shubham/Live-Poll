@@ -91,7 +91,7 @@ export default function LivePoll() {
       <div
         className="min-h-screen flex items-center justify-center p-6"
         style={{
-          backgroundColor: '#3B2856',
+          backgroundColor: '#214663',
         }}
       >
         {/* changed container: glassy/frosted look */}
@@ -204,8 +204,8 @@ export default function LivePoll() {
                                 htmlFor={inputId}
                                 className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs font-medium border transition cursor-pointer flex-shrink-0 ${
                                   selected
-                                    ? 'bg-blue-600 text-white border-blue-700 shadow-sm'
-                                    : 'bg-white/5 text-white/90 border-white/10 hover:shadow-sm'
+                                    ? 'bg-[#2f697a] text-white border-[#15313a] shadow-lg ring-1 ring-white/10'
+                                    : 'bg-white/5 text-white/90 border-white/10 hover:bg-white/6'
                                 }`}
                               >
                                 <input
@@ -215,11 +215,11 @@ export default function LivePoll() {
                                   value={markerVal}
                                   checked={selected}
                                   onChange={() => setRatingForOption(idx, markerVal)}
-                                  className="w-3 h-3 accent-blue-400"
+                                  className="w-3 h-3 accent-[#214663]"
                                 />
                                 {/* show full text on small+ screens, show number badge on mobile */}
                                 <span className="hidden sm:inline truncate text-xs">{label}</span>
-                                <span className="inline sm:hidden px-1 py-0.5 rounded-full bg-white/6 text-white text-xs font-medium">{markerVal}</span>
+                                <span className="inline sm:hidden px-1 py-0.5 rounded-full bg-[#214663]/70 text-white text-xs font-medium">{markerVal}</span>
                               </label>
                             );
                           })}
@@ -257,8 +257,8 @@ export default function LivePoll() {
               <button
                 onClick={handleSubmit}
                 disabled={ratings.length === 0 || ratings.some((r) => r < 1) || submitted}
-                className={`px-4 py-1.5 rounded-md text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 transition ${
-                  ratings.length > 0 && !ratings.some((r) => r < 1) ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-300/60 cursor-not-allowed'
+                className={`px-4 py-1.5 rounded-md text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#214663]/50 transition ${
+                  ratings.length > 0 && !ratings.some((r) => r < 1) ? 'bg-[#214663] hover:bg-[#173b43] shadow-lg' : 'bg-[#214663]/25 cursor-not-allowed opacity-80'
                 }`}
                 aria-disabled={ratings.length === 0 || ratings.some((r) => r < 1) || submitted}
               >
