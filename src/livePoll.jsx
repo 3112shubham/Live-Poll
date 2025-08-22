@@ -88,34 +88,71 @@ export default function LivePoll() {
 
   if (!question) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8">
-          <div className="text-center text-gray-600">No active question right now.</div>
+      <div
+        className="min-h-screen flex items-center justify-center p-6"
+        style={{
+          backgroundColor: '#3B2856',
+        }}
+      >
+        {/* changed container: glassy/frosted look */}
+        <div
+          className="w-full max-w-3xl relative overflow-hidden rounded-2xl p-8
+                     bg-gradient-to-r from-black/35 via-black/25 to-black/15
+                     backdrop-blur-xl backdrop-saturate-150 shadow-lg ring-1 ring-white/5 ring-inset text-white"
+          style={{
+            border: '1px solid transparent',
+            borderImage:
+              'linear-gradient(90deg, rgba(99,102,241,0.18), rgba(59,130,246,0.12), rgba(6,182,212,0.08)) 1',
+            boxShadow: '0 10px 30px rgba(2,6,23,0.45), inset 0 1px 0 rgba(255,255,255,0.02)',
+            backgroundColor: 'rgba(255,255,255,0.02)',
+          }}
+        >
+          <div aria-hidden className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02))'}} />
+          <div className="text-center text-white">No active question right now.</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white p-4">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        backgroundColor: '#214663',
+      }}
+    >
+      {/* changed container: glassy/frosted look (matches Result) */}
+      <div
+        className="w-full max-w-3xl relative overflow-hidden p-4 sm:p-6 rounded-2xl
+                   bg-gradient-to-r from-black/35 via-black/25 to-black/15
+                   backdrop-blur-xl backdrop-saturate-150 shadow-lg ring-1 ring-white/5 ring-inset text-white"
+        style={{
+          border: '1px solid transparent',
+          borderImage:
+            'linear-gradient(90deg, rgba(99,102,241,0.18), rgba(59,130,246,0.12), rgba(6,182,212,0.08)) 1',
+          boxShadow: '0 10px 30px rgba(2,6,23,0.45), inset 0 1px 0 rgba(255,255,255,0.02)',
+          backgroundColor: 'rgba(255,255,255,0.02)',
+        }}
+      >
+        <div aria-hidden className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02))'}} />
+
         {submitted ? (
           <div className="text-center py-8">
-            <h2 className="text-xl font-semibold mb-2 text-gray-900">Thank you!</h2>
-            <p className="text-sm text-gray-700 mb-2">Your response has been recorded.</p>
-            <p className="text-sm text-gray-600">Please wait for the next question to be activated.</p>
+            <h2 className="text-xl font-semibold mb-2">Thank you!</h2>
+            <p className="text-sm mb-2">Your response has been recorded.</p>
+            <p className="text-sm">Please wait for the next question to be activated.</p>
           </div>
         ) : (
           <>
             <header className="flex items-start justify-between gap-2 mb-4">
               <div>
-                <div className="text-xs text-gray-500">{question.domain}</div>
-                <h1 className="text-xl font-semibold text-gray-900 leading-tight">Live Poll</h1>
+                <div className="text-xs text-white/70">{question.domain}</div>
+                <h1 className="text-xl font-semibold leading-tight">Live Poll</h1>
               </div>
             </header>
 
             <section className="mb-4">
-              <p className="text-base font-medium text-gray-800">{question.text}</p>
+              <p className="text-base font-medium">{question.text}</p>
             </section>
 
             <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
@@ -143,11 +180,11 @@ export default function LivePoll() {
                 return (
                   <div
                     key={idx}
-                    className="p-3 border rounded-lg shadow-sm bg-white sm:min-h-[100px] min-h-0"
+                    className="p-3 border rounded-lg shadow-sm bg-white/5 sm:min-h-[100px] min-h-0"
                     aria-labelledby={`opt-${idx}-label`}
                   >
                     <div className="mb-2">
-                      <div id={`opt-${idx}-label`} className="font-medium text-gray-900">
+                      <div id={`opt-${idx}-label`} className="font-medium">
                         {opt}
                       </div>
                     </div>
@@ -168,7 +205,7 @@ export default function LivePoll() {
                                 className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs font-medium border transition cursor-pointer flex-shrink-0 ${
                                   selected
                                     ? 'bg-blue-600 text-white border-blue-700 shadow-sm'
-                                    : 'bg-white text-gray-700 border-gray-200 hover:shadow-sm'
+                                    : 'bg-white/5 text-white/90 border-white/10 hover:shadow-sm'
                                 }`}
                               >
                                 <input
@@ -178,11 +215,11 @@ export default function LivePoll() {
                                   value={markerVal}
                                   checked={selected}
                                   onChange={() => setRatingForOption(idx, markerVal)}
-                                  className="w-3 h-3 accent-blue-600"
+                                  className="w-3 h-3 accent-blue-400"
                                 />
                                 {/* show full text on small+ screens, show number badge on mobile */}
                                 <span className="hidden sm:inline truncate text-xs">{label}</span>
-                                <span className="inline sm:hidden px-1 py-0.5 rounded-full bg-gray-100 text-gray-800 text-xs font-medium">{markerVal}</span>
+                                <span className="inline sm:hidden px-1 py-0.5 rounded-full bg-white/6 text-white text-xs font-medium">{markerVal}</span>
                               </label>
                             );
                           })}
@@ -190,7 +227,7 @@ export default function LivePoll() {
                       </fieldset>
 
                       {/* helper / instructions */}
-                      <div className="mt-2 text-xs text-gray-500 flex justify-between items-center">
+                      <div className="mt-2 text-xs text-white/70 flex justify-between items-center">
                         <div>
                           {val
                             ? (
@@ -214,7 +251,7 @@ export default function LivePoll() {
             </form>
 
             <div className="mt-4 flex flex-col sm:flex-row justify-end items-center gap-2">
-              <div className="text-xs text-gray-500 mr-auto hidden sm:block">
+              <div className="text-xs text-white/70 mr-auto hidden sm:block">
                 {ratings.length > 0 && ratings.some((r) => r < 1) ? 'Please rate all options' : 'All set — ready to submit'}
               </div>
               <button
