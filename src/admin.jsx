@@ -331,15 +331,15 @@ export default function Admin() {
                 {editingId !== q.id && (
                   <div className="flex flex-col items-end gap-2">
                     <div className="flex flex-col gap-2">
-                      <button onClick={() => handleEditClick(q)} className="px-3 py-1 bg-yellow-400 text-white rounded text-sm">
+                      {/* <button onClick={() => handleEditClick(q)} className="px-3 py-1 bg-yellow-400 text-white rounded text-sm">
                         Edit
-                      </button>
+                      </button> */}
                       <button onClick={() => handleActivateExisting(q.id)} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">
                         Activate
                       </button>
-                      <button onClick={() => handleDelete(q.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm">
+                      {/* <button onClick={() => handleDelete(q.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm">
                         Delete
-                      </button>
+                      </button> */}
                     </div>
                     {activeId === q.id && <span className="text-xs text-green-600">Active</span>}
                   </div>
