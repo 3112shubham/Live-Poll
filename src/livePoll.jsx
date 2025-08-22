@@ -201,7 +201,11 @@ export default function LivePoll() {
                               )
                             : 'Choose a rating'}
                         </div>
-                        <div className="tabular-nums text-xs">{val ? `${pct}%` : '—'}</div>
+                        <div className="tabular-nums text-xs">
+                          {/* desktop: show percent; mobile: show label */}
+                          <span className="hidden sm:inline">{val ? `${pct}%` : '—'}</span>
+                          <span className="inline sm:hidden">{val ? RATING_LABELS[val - 1] : '—'}</span>
+                        </div>
                       </div>
                     </div>
                   </div>

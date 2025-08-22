@@ -168,7 +168,7 @@ export default function Admin() {
       <div className="max-w-4xl mx-auto bg-white p-6 rounded shadow">
         <h1 className="text-xl font-semibold mb-4">Admin — Live Poll</h1>
 
-        <section className="mb-6">
+        {/* <section className="mb-6">
           <h2 className="font-medium mb-2">Create & activate question</h2>
 
           <label className="block text-sm text-gray-600 mb-1">Domain</label>
@@ -239,7 +239,7 @@ export default function Admin() {
               Deactivate
             </button>
           </div>
-        </section>
+        </section> */}
 
         <section>
           <h2 className="font-medium mb-2">Existing questions</h2>
