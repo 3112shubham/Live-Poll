@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { db, doc, getDoc, onSnapshot, collection } from "../firebase";
+import { db, doc, getDoc, onSnapshot, collection, getDocs } from "../firebase";
 import { Link } from "react-router-dom";
 import bgImage from "./assets/Background.png"; // <- adjust filename if different
 import logoLeft from "./assets/IU logo New.png"; // added: left logo
@@ -48,6 +48,32 @@ export default function Result() {
             .fill(0)
             .map(() => new Array(5).fill(0))
         );
+        // immediately clear the response counter when a new question becomes active
+        setTotalResponses(0);
+
+        // immediate recount from stored responses so returned counts appear without page reload
+        (async () => {
+          try {
+            const respSnap = await getDocs(collection(db, "responses"));
+            const optsLen = q.options?.length || 0;
+            const counts = new Array(optsLen).fill(0).map(() => new Array(5).fill(0));
+            let tot = 0;
+            respSnap.docs.forEach((d) => {
+              const data = d.data();
+              if (data.questionId === q.id && Array.isArray(data.ratings)) {
+                tot += 1;
+                data.ratings.forEach((rVal, i) => {
+                  const rIdx = typeof rVal === "number" ? rVal - 1 : -1;
+                  if (rIdx >= 0 && rIdx < 5 && i < optsLen) counts[i][rIdx] += 1;
+                });
+              }
+            });
+            setOptionRatingCounts(counts);
+            setTotalResponses(tot);
+          } catch (err) {
+            console.error("failed to read responses for active question", err);
+          }
+        })();
       } else {
         setQuestion(null);
         setOptionRatingCounts([]);
