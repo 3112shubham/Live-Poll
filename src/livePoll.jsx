@@ -3,6 +3,10 @@ import { db, doc, getDoc, onSnapshot, setDoc } from '../firebase';
 
 const RATING_LABELS = ['Not useful', 'Slightly useful', 'Useful', 'Very useful', 'Most useful']; // 5-level labels
 
+const ERROR_MESSAGES = {
+  missing_selection: 'Please select at least one rating for each option.',
+};
+
 function getOrCreateClientId() {
   try {
     let id = localStorage.getItem('pollClientId');
@@ -20,6 +24,8 @@ export default function LivePoll() {
   const [question, setQuestion] = useState(null);
   const [ratings, setRatings] = useState([]); // one rating per option (1..5), 0 = unselected
   const [submitted, setSubmitted] = useState(false);
+  const [errorKey, setErrorKey] = useState(''); // common key for error messages
+  const [missingIndices, setMissingIndices] = useState([]); // indices of options missing a rating
   const clientId = useRef(getOrCreateClientId());
 
   useEffect(() => {
@@ -31,6 +37,7 @@ export default function LivePoll() {
         setQuestion(null);
         setRatings([]);
         setSubmitted(false);
+        setErrorKey('');
         return;
       }
 
@@ -39,12 +46,14 @@ export default function LivePoll() {
         setQuestion(null);
         setRatings([]);
         setSubmitted(false);
+        setErrorKey('');
         return;
       }
 
       const q = { id: qSnap.id, ...qSnap.data() };
       setQuestion(q);
       setRatings(new Array(q.options.length).fill(0));
+      setMissingIndices([]);
 
       // check if this client already submitted (server-side)
       const respDocId = `${q.id}_${clientId.current}`;
@@ -61,13 +70,19 @@ export default function LivePoll() {
       copy[optIndex] = ratingValue; // ratingValue 1..5
       return copy;
     });
+    // clear per-option missing marker when user selects
+    setMissingIndices((prev) => prev.filter((i) => i !== optIndex));
   };
 
   const handleSubmit = async () => {
     if (!question || submitted) return;
-    // require every option to have a rating
-    if (ratings.length === 0 || ratings.some((r) => r < 1 || r > 5)) {
-      return alert('Please rate all options before submitting.');
+    // require every option to have a rating; mark specific missing options
+    const missing = ratings
+      .map((r, i) => (r < 1 || r > 5 ? i : -1))
+      .filter((i) => i >= 0);
+    if (ratings.length === 0 || missing.length > 0) {
+      setMissingIndices(missing);
+      return;
     }
 
     const respDocId = `${question.id}_${clientId.current}`;
@@ -81,8 +96,10 @@ export default function LivePoll() {
     try {
       await setDoc(doc(db, 'responses', respDocId), payload);
       setSubmitted(true);
+      setMissingIndices([]);
     } catch (err) {
       console.error('failed to save response', err);
+      // optionally set a generic error key here
     }
   };
 
@@ -153,6 +170,12 @@ export default function LivePoll() {
 
             <section className="mb-4">
               <p className="text-2xl sm:text-3xl font-semibold !text-white">{question.text}</p> {/* changed: larger font + force white */}
+              {/* error message shown below question */} 
+             {missingIndices.length > 1 ? (
+               <div className="mt-2 text-sm text-red-400" role="alert" aria-live="assertive">
+                 Please select a rating for each missing option.
+               </div>
+             ) : null}
             </section>
 
             <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
@@ -202,9 +225,9 @@ export default function LivePoll() {
                               <label
                                 key={markerVal}
                                 htmlFor={inputId}
-                                className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs font-medium border transition cursor-pointer flex-shrink-0 ${
+                                className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs font-medium border transition transform duration-150 ease-out cursor-pointer flex-shrink-0 ${
                                   selected
-                                    ? 'bg-[#2f697a] text-white border-[#15313a] shadow-lg ring-1 ring-white/10'
+                                    ? 'bg-gradient-to-r from-[#0ea5a4] to-[#0597a6] text-white border-[#056d73] shadow-lg ring-2 ring-white/10 scale-105'
                                     : 'bg-white/5 text-white/90 border-white/10 hover:bg-white/6'
                                 }`}
                               >
@@ -244,6 +267,13 @@ export default function LivePoll() {
                           <span className="inline sm:hidden">{val ? RATING_LABELS[val - 1] : '—'}</span>
                         </div>
                       </div>
+
+                      {/* per-option error shown directly under that option card */}
+                      {missingIndices.includes(idx) ? (
+                        <div className="mt-2 text-sm text-red-400" role="alert" aria-live="assertive">
+                          Please select a rating for this option.
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 );
@@ -256,11 +286,9 @@ export default function LivePoll() {
               </div>
               <button
                 onClick={handleSubmit}
-                disabled={ratings.length === 0 || ratings.some((r) => r < 1) || submitted}
-                className={`px-4 py-1.5 rounded-md text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#214663]/50 transition ${
-                  ratings.length > 0 && !ratings.some((r) => r < 1) ? 'bg-[#214663] hover:bg-[#173b43] shadow-lg' : 'bg-[#214663]/25 cursor-not-allowed opacity-80'
-                }`}
-                aria-disabled={ratings.length === 0 || ratings.some((r) => r < 1) || submitted}
+                // always active per request; validation handled inside handleSubmit
+                className={`px-4 py-1.5 rounded-md text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 transition shadow-lg transform-gpu duration-150 ease-out bg-gradient-to-r from-[#0ea5a4] to-[#0597a6] hover:from-[#09a8a4] hover:to-[#048f9a] ring-2 ring-white/10`}
+                aria-disabled={submitted}
               >
                 Submit
               </button>

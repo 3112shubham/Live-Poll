@@ -6,7 +6,7 @@ import Result from './result'
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/poll"> {/* Add basename here */}
       <Routes>
         <Route path="/" element={<LivePoll />} />
         <Route path="/admin" element={<Admin />} />
