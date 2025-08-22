@@ -97,29 +97,28 @@ export default function LivePoll() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white p-6">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white p-4">
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-4 sm:p-6">
         {submitted ? (
-          <div className="text-center py-10">
-            <h2 className="text-2xl font-semibold mb-3 text-gray-900">Thank you!</h2>
-            <p className="text-gray-700 mb-4">Your response has been recorded.</p>
-            <p className="text-gray-600">Please wait for the next question to be activated.</p>
+          <div className="text-center py-8">
+            <h2 className="text-xl font-semibold mb-2 text-gray-900">Thank you!</h2>
+            <p className="text-sm text-gray-700 mb-2">Your response has been recorded.</p>
+            <p className="text-sm text-gray-600">Please wait for the next question to be activated.</p>
           </div>
         ) : (
           <>
-            <header className="flex items-start justify-between gap-4 mb-6">
+            <header className="flex items-start justify-between gap-2 mb-4">
               <div>
                 <div className="text-xs text-gray-500">{question.domain}</div>
-                <h1 className="text-2xl font-semibold text-gray-900 leading-tight">Live Poll</h1>
+                <h1 className="text-xl font-semibold text-gray-900 leading-tight">Live Poll</h1>
               </div>
-
             </header>
 
-            <section className="mb-6">
-              <p className="text-lg font-medium text-gray-800">{question.text}</p>
+            <section className="mb-4">
+              <p className="text-base font-medium text-gray-800">{question.text}</p>
             </section>
 
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
               {question.options.map((opt, idx) => {
                 const val = ratings[idx] || 0;
                 const pct = Math.round((val / 5) * 100);
@@ -144,10 +143,10 @@ export default function LivePoll() {
                 return (
                   <div
                     key={idx}
-                    className="p-4 border rounded-lg shadow-sm bg-white sm:min-h-[120px] min-h-0"
+                    className="p-3 border rounded-lg shadow-sm bg-white sm:min-h-[100px] min-h-0"
                     aria-labelledby={`opt-${idx}-label`}
                   >
-                    <div className="mb-3">
+                    <div className="mb-2">
                       <div id={`opt-${idx}-label`} className="font-medium text-gray-900">
                         {opt}
                       </div>
@@ -155,9 +154,9 @@ export default function LivePoll() {
 
                     <div className="relative">
                       {/* Radio buttons (visible on all sizes) */}
-                      <fieldset className="mb-3" onKeyDown={onKey} aria-labelledby={`opt-${idx}-label`}>
+                      <fieldset className="mb-2" onKeyDown={onKey} aria-labelledby={`opt-${idx}-label`}>
                         <legend className="sr-only">{`Rate ${opt}`}</legend>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="flex flex-row flex-nowrap items-center gap-1 overflow-x-auto -mx-1 px-1">
                           {RATING_LABELS.map((label, rIdx) => {
                             const markerVal = rIdx + 1;
                             const selected = val === markerVal;
@@ -166,7 +165,7 @@ export default function LivePoll() {
                               <label
                                 key={markerVal}
                                 htmlFor={inputId}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium border transition cursor-pointer ${
+                                className={`flex items-center gap-2 px-2 py-1 rounded-md text-xs font-medium border transition cursor-pointer flex-shrink-0 ${
                                   selected
                                     ? 'bg-blue-600 text-white border-blue-700 shadow-sm'
                                     : 'bg-white text-gray-700 border-gray-200 hover:shadow-sm'
@@ -179,9 +178,11 @@ export default function LivePoll() {
                                   value={markerVal}
                                   checked={selected}
                                   onChange={() => setRatingForOption(idx, markerVal)}
-                                  className="w-4 h-4 accent-blue-600"
+                                  className="w-3 h-3 accent-blue-600"
                                 />
-                                <span className="truncate">{label}</span>
+                                {/* show full text on small+ screens, show number badge on mobile */}
+                                <span className="hidden sm:inline truncate text-xs">{label}</span>
+                                <span className="inline sm:hidden px-1 py-0.5 rounded-full bg-gray-100 text-gray-800 text-xs font-medium">{markerVal}</span>
                               </label>
                             );
                           })}
@@ -189,9 +190,18 @@ export default function LivePoll() {
                       </fieldset>
 
                       {/* helper / instructions */}
-                      <div className="mt-3 text-xs text-gray-500 flex justify-between items-center">
-                        <div>{val ? RATING_LABELS[val - 1] : 'Choose a rating'}</div>
-                        <div className="tabular-nums">{val ? `${pct}%` : '—'}</div>
+                      <div className="mt-2 text-xs text-gray-500 flex justify-between items-center">
+                        <div>
+                          {val
+                            ? (
+                                <>
+                                  <span className="hidden sm:inline text-xs">{RATING_LABELS[val - 1]}</span>
+                                  <span className="inline sm:hidden font-semibold text-xs">{val}</span>
+                                </>
+                              )
+                            : 'Choose a rating'}
+                        </div>
+                        <div className="tabular-nums text-xs">{val ? `${pct}%` : '—'}</div>
                       </div>
                     </div>
                   </div>
@@ -199,14 +209,14 @@ export default function LivePoll() {
               })}
             </form>
 
-            <div className="mt-6 flex flex-col sm:flex-row justify-end items-center gap-3">
-              <div className="text-sm text-gray-500 mr-auto hidden sm:block">
+            <div className="mt-4 flex flex-col sm:flex-row justify-end items-center gap-2">
+              <div className="text-xs text-gray-500 mr-auto hidden sm:block">
                 {ratings.length > 0 && ratings.some((r) => r < 1) ? 'Please rate all options' : 'All set — ready to submit'}
               </div>
               <button
                 onClick={handleSubmit}
                 disabled={ratings.length === 0 || ratings.some((r) => r < 1) || submitted}
-                className={`px-5 py-2 rounded-lg text-white font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 transition ${
+                className={`px-4 py-1.5 rounded-md text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 transition ${
                   ratings.length > 0 && !ratings.some((r) => r < 1) ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-300/60 cursor-not-allowed'
                 }`}
                 aria-disabled={ratings.length === 0 || ratings.some((r) => r < 1) || submitted}
